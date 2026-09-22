@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,7 +8,6 @@ import { ChatterBubble } from '@/components/room/ChatterBubble';
 import { ToyPlay, type PetHitBox } from '@/components/room/ToyPlay';
 import { LetterBadge } from '@/components/room/LetterBadge';
 import { NoteSheet } from '@/components/room/NoteSheet';
-import { BottomActionBar } from '@/components/room/BottomActionBar';
 import { PetSprite } from '@/components/room/PetSprite';
 import { RoomBackground } from '@/components/room/RoomBackground';
 import { TopStatusBar } from '@/components/room/TopStatusBar';
@@ -17,6 +17,7 @@ import { FONTS, GUTTER, SPACING, TAB_BAR_HEIGHT, TEXT_ON_ART, tabBarOverhang } f
 import { PET_DEFINITIONS, PET_ORDER } from '@/domain/petDefinitions';
 import { dayNumber } from '@/domain/wishes';
 import { useGameStore } from '@/store/gameStore';
+import { useUiStore } from '@/store/uiStore';
 import { getTimeOfDay } from '@/domain/time';
 import type { PetDefinition } from '@/domain/petDefinitions';
 import type { PetId, TimeOfDay, ToyId } from '@/domain/types';
@@ -66,8 +67,9 @@ export default function HomeScreen() {
   // over on its own at midnight, and nothing else here would re-render at that moment.
   const [today, setToday] = useState(() => dayNumber(startedAt));
   const [activePetId, setActivePetId] = useState<PetId>(PET_ORDER[0]);
-  const [foodVisible, setFoodVisible] = useState(false);
-  const [playVisible, setPlayVisible] = useState(false);
+  // Food and play are opened from the tab bar now, which lives outside this screen.
+  const sheet = useUiStore((s) => s.sheet);
+  const closeSheet = useUiStore((s) => s.closeSheet);
   const [noteVisible, setNoteVisible] = useState(false);
   const [activeToy, setActiveToy] = useState<{ toyId: ToyId; petId: PetId } | null>(null);
   const endPlay = useCallback(() => setActiveToy(null), []);
@@ -128,9 +130,19 @@ export default function HomeScreen() {
           />
         </View>
 
-        <Text style={styles.nameTag}>{activeDef.name}</Text>
+        <Pressable
+          onPress={() => router.push(`/pets/${activePetId}`)}
+          accessibilityRole="button"
+          accessibilityLabel={`Открыть профиль: ${activeDef.name}`}
+        >
+          <Text style={styles.nameTag}>{activeDef.name}</Text>
+        </Pressable>
 
-        <View style={styles.room} pointerEvents="box-none">
+        {/* Sits above the ragged paper edge, which rises well clear of the bar itself. */}
+        <View
+          style={[styles.room, { paddingBottom: insets.bottom + TAB_BAR_HEIGHT + tabBarOverhang(screenWidth) + SPACING.lg }]}
+          pointerEvents="box-none"
+        >
           <SideAvatarButton def={PET_DEFINITIONS[prevId]} onPress={() => setActivePetId(prevId)} />
           <View
             ref={stageRef}
@@ -153,16 +165,12 @@ export default function HomeScreen() {
           <SideAvatarButton def={PET_DEFINITIONS[nextId]} onPress={() => setActivePetId(nextId)} />
         </View>
 
-        {/* Clears the ragged paper edge, which rises well above the bar itself. */}
-        <View style={{ paddingBottom: insets.bottom + TAB_BAR_HEIGHT + tabBarOverhang(screenWidth) + SPACING.md }}>
-          <BottomActionBar onFood={() => setFoodVisible(true)} onPlay={() => setPlayVisible(true)} />
-        </View>
       </View>
 
-      <FoodSheet key={activePetId} visible={foodVisible} onClose={() => setFoodVisible(false)} initialPetId={activePetId} />
+      <FoodSheet key={activePetId} visible={sheet === 'food'} onClose={closeSheet} initialPetId={activePetId} />
       <PlaySheet
-        visible={playVisible}
-        onClose={() => setPlayVisible(false)}
+        visible={sheet === 'play'}
+        onClose={closeSheet}
         onStartMiniGame={(toyId, petId) => {
           // The toy is waved over whoever is on screen, so bring that pet into view first.
           setActivePetId(petId);
@@ -209,7 +217,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
-    paddingBottom: 96,
   },
   avatarButton: {
     // No plate behind them: the cut-out still frame stands straight on the background.
