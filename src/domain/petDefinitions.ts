@@ -133,13 +133,10 @@ export const PET_DEFINITIONS: Record<PetId, PetDefinition> = {
       PETTING: '🥰',
     },
     idleSprite: require('../../assets/images/georgia-idle.webp'),
-    playSprite: require('../../assets/images/georgia-play.webp'),
-    // 60 and 70 frames at 12 fps.
-    idleLoopMs: 4980,
-    playLoopMs: 5810,
+    // 36 frames at 12 fps.
+    idleLoopMs: 2988,
     portrait: require('../../assets/images/portraits/georgia.png'),
-    spriteScale: 2.61,
-    spriteOffsetY: -0.08,
+    spriteScale: 2.49,
   },
 };
 
