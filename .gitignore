@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Source artwork dropped in for processing (videos run to hundreds of MB, well past
+# GitHub's file limit). The processed sprites and pictures under assets/ are committed.
+image/
