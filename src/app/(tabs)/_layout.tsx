@@ -8,9 +8,11 @@ import { useUiStore, type SheetName } from '@/store/uiStore';
 
 const PAPER = require('../../../assets/images/tabbar-paper.png');
 
+// Own icons, distinct from the actual food/toy artwork shown inside the sheets — a dog-treat
+// biscuit or a single ball would misrepresent what tapping the tab actually opens.
 const ICONS = {
-  food: require('../../../assets/images/items/food-bone-biscuit.png'),
-  play: require('../../../assets/images/items/toy-ball.png'),
+  food: require('../../../assets/images/icons/food.png'),
+  play: require('../../../assets/images/icons/play.png'),
   puzzle: require('../../../assets/images/icons/puzzle.png'),
 } satisfies Record<string, ImageSourcePropType>;
 
@@ -107,8 +109,8 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xs,
   },
   icon: {
-    width: 28,
-    height: 28,
+    width: 38,
+    height: 38,
   },
   label: {
     fontFamily: FONTS.bodyMedium,

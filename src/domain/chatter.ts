@@ -9,7 +9,7 @@ export interface ChatterLine {
  * Lines are stored with `{м|ж}` where Russian needs a gendered ending — `render` picks the
  * side that matches the pet, so Варяг says "уронил" and Джорджия says "уронила".
  */
-function render(template: string, gender: 'f' | 'm'): string {
+export function render(template: string, gender: 'f' | 'm'): string {
   return template.replace(/\{([^|}]*)\|([^}]*)\}/g, (_, masculine, feminine) => (gender === 'f' ? feminine : masculine));
 }
 

@@ -33,9 +33,11 @@ export const GUTTER = SPACING.lg;
 
 // White copy on the Home screen sits straight on the illustration, where it crosses sky,
 // house and grass. No single colour clears 4.5:1 against all three, so the text carries its
-// own soft shadow — that is what makes it readable, not the opacity.
+// own soft shadow — that is what makes it readable, not the opacity. Deep navy rather than
+// black: it is the backyard sky's own hue taken right down, so the halo sinks into the
+// picture instead of greying it. Lighter than black, so it carries a little more alpha.
 export const TEXT_ON_ART = {
-  textShadowColor: 'rgba(26, 16, 10, 0.55)',
+  textShadowColor: 'rgba(8, 40, 88, 0.6)',
   textShadowOffset: { width: 0, height: 1 },
   textShadowRadius: 6,
 };

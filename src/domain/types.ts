@@ -27,7 +27,7 @@ export type StatePriority = 'high' | 'low';
 
 export type BondLevel = 1 | 2 | 3 | 4 | 5;
 
-export type FoodId = 'tuna' | 'wet_cat_food' | 'dog_treat' | 'veggie_snack' | 'treat';
+export type FoodId = 'tuna' | 'wet_cat_food' | 'dry_dog_food' | 'dog_treat' | 'veggie_snack' | 'treat';
 export type ToyId = 'yarn' | 'ball' | 'rope' | 'feather' | 'mouse_toy' | 'laser';
 
 export interface Position {
@@ -39,6 +39,8 @@ export interface ThoughtBubbleContent {
   kind: 'food' | 'toy' | 'heart' | 'zzz' | 'annoyed' | 'sparkle' | 'custom';
   emoji: string;
   createdAt: number;
+  /** A line the pet says out loud over its head — feeding and play reactions carry one. */
+  text?: string;
 }
 
 /** Dynamic, persisted state for a single pet. Static traits (personality, favorites) live in petDefinitions.ts. */

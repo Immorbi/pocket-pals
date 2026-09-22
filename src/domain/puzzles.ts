@@ -1,6 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
-export type PuzzleId = 'night' | 'sunrise';
+export type PuzzleId = 'night' | 'sunrise' | 'blanket' | 'sunbeam' | 'nap' | 'cuddle';
 
 export interface PuzzleDefinition {
   id: PuzzleId;
@@ -41,9 +41,49 @@ export const PUZZLES: Record<PuzzleId, PuzzleDefinition> = {
     preview: require('../../assets/images/puzzles/sunrise-grey.png'),
     reward: 'Солнце встало, мячик рядом — Джорджия довольна.',
   },
+  blanket: {
+    id: 'blanket',
+    title: 'Лея на пледе',
+    cols: 3,
+    rows: 4,
+    aspect: 4 / 3,
+    image: require('../../assets/images/puzzles/blanket.png'),
+    preview: require('../../assets/images/puzzles/blanket-grey.png'),
+    reward: 'Клетчатый плед, солнце в окне — Лея как дома.',
+  },
+  sunbeam: {
+    id: 'sunbeam',
+    title: 'Варяг у окна',
+    cols: 3,
+    rows: 4,
+    aspect: 4 / 3,
+    image: require('../../assets/images/puzzles/sunbeam.png'),
+    preview: require('../../assets/images/puzzles/sunbeam-grey.png'),
+    reward: 'Тёплая полоска света — и спится крепче обычного.',
+  },
+  nap: {
+    id: 'nap',
+    title: 'Джорджия в лежанке',
+    cols: 3,
+    rows: 4,
+    aspect: 4 / 3,
+    image: require('../../assets/images/puzzles/nap.png'),
+    preview: require('../../assets/images/puzzles/nap-grey.png'),
+    reward: 'Свернулась колечком — самый крепкий сон в доме.',
+  },
+  cuddle: {
+    id: 'cuddle',
+    title: 'Варяг и Лея',
+    cols: 3,
+    rows: 4,
+    aspect: 4 / 3,
+    image: require('../../assets/images/puzzles/cuddle.png'),
+    preview: require('../../assets/images/puzzles/cuddle-grey.png'),
+    reward: 'Вдвоём теплее — и мириться не пришлось.',
+  },
 };
 
-export const PUZZLE_ORDER: PuzzleId[] = ['night', 'sunrise'];
+export const PUZZLE_ORDER: PuzzleId[] = ['night', 'sunrise', 'blanket', 'sunbeam', 'nap', 'cuddle'];
 
 export type PuzzleProgress = Record<PuzzleId, number[]>;
 

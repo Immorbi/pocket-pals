@@ -9,6 +9,7 @@ import { PET_DEFINITIONS, PET_ORDER } from '@/domain/petDefinitions';
 import { PUZZLE_ORDER, pieceCount, type PuzzleId, type PuzzleProgress } from '@/domain/puzzles';
 import { pickRandomEvent, pushRecentEventKey } from '@/domain/randomEvents';
 import { resolveTapReaction } from '@/domain/reactions';
+import { feedReactionLine, playReactionLine } from '@/domain/reactionPhrases';
 import { canEnterState } from '@/domain/stateMachine';
 import { getTimeOfDay } from '@/domain/time';
 import { TOYS } from '@/domain/toys';
@@ -222,11 +223,15 @@ export const useGameStore = create<Store>()(
         const now = Date.now();
         const state = get();
         const pet = state.pets[id];
+        const def = PET_DEFINITIONS[id];
         const food = FOODS[foodId];
         const reaction = foodReactionFor(id, foodId);
 
         if (reaction === 'refused') {
-          const pets = { ...state.pets, [id]: { ...pet, thought: { kind: 'annoyed' as const, emoji: '👃', createdAt: now } } };
+          const pets = {
+            ...state.pets,
+            [id]: { ...pet, thought: { kind: 'annoyed' as const, emoji: '👃', text: feedReactionLine(def.gender, 'refused'), createdAt: now } },
+          };
           set({ pets });
           return;
         }
@@ -245,7 +250,12 @@ export const useGameStore = create<Store>()(
             bondLevel: bondResult.bondLevel,
             lastFed: now,
             lastInteraction: now,
-            thought: reaction === 'favorite' ? { kind: 'heart', emoji: '💖', createdAt: now } : null,
+            thought: {
+              kind: reaction === 'favorite' ? 'heart' : 'food',
+              emoji: reaction === 'favorite' ? '💖' : food.emoji,
+              text: feedReactionLine(def.gender, reaction === 'favorite' ? 'favorite' : 'normal'),
+              createdAt: now,
+            },
           },
         };
         set({ pets });
@@ -280,7 +290,12 @@ export const useGameStore = create<Store>()(
             currentState: 'IDLE' as PetStateName,
             lastPlayed: now,
             lastInteraction: now,
-            thought: isFavorite ? { kind: 'heart' as const, emoji: '💖', createdAt: now } : null,
+            thought: {
+              kind: isFavorite ? ('heart' as const) : ('toy' as const),
+              emoji: isFavorite ? '💖' : toy.emoji,
+              text: playReactionLine(def.gender, isFavorite),
+              createdAt: now,
+            },
           },
         };
         set({ pets });

@@ -5,20 +5,19 @@ import { BottomSheetBase } from '@/components/ui/BottomSheetBase';
 import { COLORS, FONTS, RADIUS, SPACING } from '@/constants/theme';
 import { FOOD_ORDER, FOODS } from '@/domain/food';
 import { PET_DEFINITIONS, PET_ORDER } from '@/domain/petDefinitions';
-import type { PetId } from '@/domain/types';
-import { useGameStore } from '@/store/gameStore';
+import type { FoodId, PetId } from '@/domain/types';
 
 interface FoodSheetProps {
   visible: boolean;
   onClose: () => void;
   initialPetId: PetId;
+  onStartFeeding: (foodId: FoodId, petId: PetId) => void;
 }
 
 // Caller passes `key={initialPetId}` (see Home screen) so this remounts — and re-defaults
 // its selection — whenever the active pet changes, instead of going stale after first open.
-export function FoodSheet({ visible, onClose, initialPetId }: FoodSheetProps) {
+export function FoodSheet({ visible, onClose, initialPetId, onStartFeeding }: FoodSheetProps) {
   const [selectedPet, setSelectedPet] = useState<PetId>(initialPetId);
-  const feedPet = useGameStore((s) => s.feedPet);
 
   return (
     <BottomSheetBase visible={visible} title="Еда" onClose={onClose}>
@@ -57,8 +56,8 @@ export function FoodSheet({ visible, onClose, initialPetId }: FoodSheetProps) {
               key={id}
               style={[styles.foodCard, isFavorite && styles.foodCardFavorite]}
               onPress={() => {
-                feedPet(selectedPet, id);
                 onClose();
+                onStartFeeding(id, selectedPet);
               }}
               accessibilityRole="button"
               accessibilityLabel={`Покормить: ${food.label}${isFavorite ? ', любимое' : ''}`}

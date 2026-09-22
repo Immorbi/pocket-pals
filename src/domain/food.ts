@@ -20,7 +20,7 @@ export const FOODS: Record<FoodId, FoodDefinition> = {
     id: 'tuna',
     label: 'Тунец',
     emoji: '🐟',
-    image: require('../../assets/images/items/toy-fish.png'),
+    image: require('../../assets/images/items/food-tuna.png'),
     hungerRestore: 20,
     favoriteOf: ['cat1'],
     refusedBy: [],
@@ -33,6 +33,15 @@ export const FOODS: Record<FoodId, FoodDefinition> = {
     hungerRestore: 20,
     favoriteOf: ['cat2'],
     refusedBy: ['dog'],
+  },
+  dry_dog_food: {
+    id: 'dry_dog_food',
+    label: 'Собачий корм',
+    emoji: '🥣',
+    image: require('../../assets/images/items/food-dog-food.png'),
+    hungerRestore: 20,
+    favoriteOf: [],
+    refusedBy: ['cat1', 'cat2'],
   },
   dog_treat: {
     id: 'dog_treat',
@@ -63,7 +72,7 @@ export const FOODS: Record<FoodId, FoodDefinition> = {
   },
 };
 
-export const FOOD_ORDER: FoodId[] = ['tuna', 'wet_cat_food', 'dog_treat', 'veggie_snack', 'treat'];
+export const FOOD_ORDER: FoodId[] = ['tuna', 'wet_cat_food', 'dry_dog_food', 'dog_treat', 'veggie_snack', 'treat'];
 
 export const FAVORITE_HUNGER_BONUS = 10;
 

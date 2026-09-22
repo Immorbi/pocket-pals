@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ChatterBubble } from '@/components/room/ChatterBubble';
+import { PetChatter } from '@/components/room/PetChatter';
+import { FoodPlay } from '@/components/room/FoodPlay';
 import { ToyPlay, type PetHitBox } from '@/components/room/ToyPlay';
 import { LetterBadge } from '@/components/room/LetterBadge';
 import { NoteSheet } from '@/components/room/NoteSheet';
@@ -20,7 +21,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useUiStore } from '@/store/uiStore';
 import { getTimeOfDay } from '@/domain/time';
 import type { PetDefinition } from '@/domain/petDefinitions';
-import type { PetId, TimeOfDay, ToyId } from '@/domain/types';
+import type { FoodId, PetId, TimeOfDay, ToyId } from '@/domain/types';
 import { useGameLoop } from '@/hooks/useGameLoop';
 
 // Dead-center within its own fixed-size stage below — not a percentage of the room, so it
@@ -73,7 +74,9 @@ export default function HomeScreen() {
   const [noteVisible, setNoteVisible] = useState(false);
   const [activeToy, setActiveToy] = useState<{ toyId: ToyId; petId: PetId } | null>(null);
   const endPlay = useCallback(() => setActiveToy(null), []);
-  // Window coordinates of the drawn pet, so the toy knows when it is being waved over them.
+  const [activeFood, setActiveFood] = useState<{ foodId: FoodId; petId: PetId } | null>(null);
+  const endFeeding = useCallback(() => setActiveFood(null), []);
+  // Window coordinates of the drawn pet, so the toy/food knows when it is being waved over them.
   const stageRef = useRef<View>(null);
   const [petHitBox, setPetHitBox] = useState<PetHitBox | null>(null);
 
@@ -151,7 +154,7 @@ export default function HomeScreen() {
             onLayout={measurePet}
           >
             <View style={[styles.bubbleAnchor, { bottom: bubbleBottom }]} pointerEvents="none">
-              <ChatterBubble key={activePetId} gender={activeDef.gender} />
+              <PetChatter key={activePetId} petId={activePetId} gender={activeDef.gender} />
             </View>
             <PetSprite
               // Switching animal stays instant — a fresh sprite has no running loop to wait for.
@@ -167,7 +170,17 @@ export default function HomeScreen() {
 
       </View>
 
-      <FoodSheet key={activePetId} visible={sheet === 'food'} onClose={closeSheet} initialPetId={activePetId} />
+      <FoodSheet
+        key={activePetId}
+        visible={sheet === 'food'}
+        onClose={closeSheet}
+        initialPetId={activePetId}
+        onStartFeeding={(foodId, petId) => {
+          // The food is carried to whoever is on screen, so bring that pet into view first.
+          setActivePetId(petId);
+          setActiveFood({ foodId, petId });
+        }}
+      />
       <PlaySheet
         visible={sheet === 'play'}
         onClose={closeSheet}
@@ -180,6 +193,9 @@ export default function HomeScreen() {
       <NoteSheet visible={noteVisible} onClose={() => setNoteVisible(false)} />
       {activeToy ? (
         <ToyPlay toyId={activeToy.toyId} petId={activeToy.petId} hitBox={petHitBox} onDone={endPlay} />
+      ) : null}
+      {activeFood ? (
+        <FoodPlay foodId={activeFood.foodId} petId={activeFood.petId} hitBox={petHitBox} onDone={endFeeding} />
       ) : null}
     </View>
   );
@@ -208,7 +224,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     letterSpacing: 0.5,
-    marginTop: SPACING.lg,
+    marginTop: SPACING.sm,
     ...TEXT_ON_ART,
   },
   room: {
@@ -224,7 +240,7 @@ const styles = StyleSheet.create({
     height: 72,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.xl + SPACING.lg,
+    marginBottom: SPACING.xl + SPACING.lg + SPACING.sm,
   },
   avatarButtonImage: {
     width: '100%',
