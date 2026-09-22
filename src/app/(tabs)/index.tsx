@@ -140,7 +140,7 @@ export default function HomeScreen() {
 
         {/* Sits above the ragged paper edge, which rises well clear of the bar itself. */}
         <View
-          style={[styles.room, { paddingBottom: insets.bottom + TAB_BAR_HEIGHT + tabBarOverhang(screenWidth) + SPACING.lg }]}
+          style={[styles.room, { paddingBottom: insets.bottom + TAB_BAR_HEIGHT + tabBarOverhang(screenWidth) + SPACING.xl * 2 }]}
           pointerEvents="box-none"
         >
           <SideAvatarButton def={PET_DEFINITIONS[prevId]} onPress={() => setActivePetId(prevId)} />
