@@ -30,8 +30,7 @@
       "expo-font"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "baseUrl": "/pocket-pals"
+      "typedRoutes": true
     }
   }
 }
