@@ -10,7 +10,13 @@ import { PET_DEFINITIONS } from '@/domain/petDefinitions';
 import type { FoodId, PetId } from '@/domain/types';
 import { useGameStore } from '@/store/gameStore';
 
-import type { PetHitBox } from './ToyPlay';
+/** Где питомец нарисован на экране, в координатах окна. */
+export interface PetHitBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 interface FoodPlayProps {
   foodId: FoodId;

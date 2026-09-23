@@ -17,19 +17,22 @@ import { TOYS } from '@/domain/toys';
 import type { PetId, ToyId } from '@/domain/types';
 import { useGameStore } from '@/store/gameStore';
 
-export interface PetHitBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 interface ToyPlayProps {
   toyId: ToyId;
   petId: PetId;
-  /** Where the pet is on screen, in window coordinates. */
-  hitBox: PetHitBox | null;
   onDone: () => void;
+}
+
+/** Сколько раз нужно бросить игрушку, чтобы питомец наигрался. */
+const THROWS_PER_SESSION = 5;
+
+/** 1 бросок, 2–4 броска, 5 бросков. */
+function throwWord(n: number): string {
+  const tens = n % 100;
+  const ones = n % 10;
+  if (ones === 1 && tens !== 11) return 'бросок';
+  if (ones >= 2 && ones <= 4 && (tens < 12 || tens > 14)) return 'броска';
+  return 'бросков';
 }
 
 const TOY_SIZE = 76;
@@ -52,7 +55,7 @@ const ROLL_DRAG = 2.4;
 const REST_SPEED = 42;
 const EDGE_PADDING = 8;
 
-export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
+export function ToyPlay({ toyId, petId, onDone }: ToyPlayProps) {
   const toy = TOYS[toyId];
   const def = PET_DEFINITIONS[petId];
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -60,9 +63,8 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
   const startPlaying = useGameStore((s) => s.startPlaying);
   const finishPlaying = useGameStore((s) => s.finishPlaying);
 
-  const [touching, setTouching] = useState(false);
-  const [thrown, setThrown] = useState(false);
-  const [left, setLeft] = useState(toy.durationSeconds);
+  const [throws, setThrows] = useState(0);
+  const left = THROWS_PER_SESSION - throws;
   const done = left <= 0;
 
   const x = useSharedValue(0);
@@ -71,20 +73,12 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
   const velocityY = useSharedValue(0);
   const spin = useSharedValue(0);
   const flying = useSharedValue(false);
-  const onPet = useSharedValue(false);
   const grabbed = useSharedValue(0);
 
-  // Only the seconds the toy actually spends on the pet count, so the game is about
-  // playing with them rather than waiting out a timer.
+  // Игра начинается с первого броска, а не с касания питомца.
   useEffect(() => {
-    if (!touching || done) return;
-    const tick = setTimeout(() => setLeft((s) => s - 1), 1000);
-    return () => clearTimeout(tick);
-  }, [touching, left, done]);
-
-  useEffect(() => {
-    if (touching) startPlaying(petId);
-  }, [touching, petId, startPlaying]);
+    if (throws === 1) startPlaying(petId);
+  }, [throws, petId, startPlaying]);
 
   useEffect(() => {
     if (!done) return;
@@ -94,25 +88,8 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
     return () => clearTimeout(timer);
   }, [done, petId, toyId, finishPlaying, onDone]);
 
-  const reportTouch = (value: boolean) => setTouching(value);
-  const reportThrown = () => setThrown(true);
+  const reportThrown = () => setThrows((n) => Math.min(THROWS_PER_SESSION, n + 1));
   const bounceFeedback = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-  /** Window-space centre of the toy, which is what the pet's hit box is measured against. */
-  const overPet = (nextX: number, nextY: number) => {
-    'worklet';
-    if (!hitBox) return false;
-    const cx = TOY_START_X + nextX + TOY_SIZE / 2;
-    const cy = toyStartY + nextY + TOY_SIZE / 2;
-    return cx > hitBox.x && cx < hitBox.x + hitBox.width && cy > hitBox.y && cy < hitBox.y + hitBox.height;
-  };
-
-  const setTouchIfChanged = (value: boolean) => {
-    'worklet';
-    if (onPet.value === value) return;
-    onPet.value = value;
-    runOnJS(reportTouch)(value);
-  };
 
   useFrameCallback((frame) => {
     'worklet';
@@ -157,7 +134,6 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
     x.value = nextX;
     y.value = nextY;
     spin.value += velocityX.value * dt * 0.9;
-    setTouchIfChanged(overPet(nextX, nextY));
   });
 
   /* eslint-disable react-hooks/immutability -- Reanimated shared values written from gesture
@@ -174,7 +150,6 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
       x.value += event.changeX;
       y.value += event.changeY;
       spin.value += event.changeX * 0.4;
-      setTouchIfChanged(overPet(x.value, y.value));
     })
     .onEnd((event) => {
       // Let go mid-air and it keeps the speed of your hand — that is the throw.
@@ -199,11 +174,9 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
 
   const hint = done
     ? `${def.name} ${def.gender === 'f' ? 'наигралась' : 'наигрался'}!`
-    : touching
-      ? `Ещё ${left} с`
-      : thrown
-        ? 'Кидай ещё'
-        : `Брось ${toy.label.toLowerCase()}`;
+    : throws === 0
+      ? `Брось ${toy.label.toLowerCase()} — ${THROWS_PER_SESSION} раз`
+      : `Ещё ${left} ${throwWord(left)}`;
 
   return (
     <View style={styles.layer} pointerEvents="box-none">

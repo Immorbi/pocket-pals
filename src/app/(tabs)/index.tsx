@@ -5,8 +5,8 @@ import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PetChatter } from '@/components/room/PetChatter';
-import { FoodPlay } from '@/components/room/FoodPlay';
-import { ToyPlay, type PetHitBox } from '@/components/room/ToyPlay';
+import { FoodPlay, type PetHitBox } from '@/components/room/FoodPlay';
+import { ToyPlay } from '@/components/room/ToyPlay';
 import { LetterBadge } from '@/components/room/LetterBadge';
 import { NoteSheet } from '@/components/room/NoteSheet';
 import { PetSprite } from '@/components/room/PetSprite';
@@ -190,7 +190,7 @@ export default function HomeScreen() {
       />
       <NoteSheet visible={noteVisible} onClose={() => setNoteVisible(false)} />
       {activeToy ? (
-        <ToyPlay toyId={activeToy.toyId} petId={activeToy.petId} hitBox={petHitBox} onDone={endPlay} />
+        <ToyPlay toyId={activeToy.toyId} petId={activeToy.petId} onDone={endPlay} />
       ) : null}
       {activeFood ? (
         <FoodPlay foodId={activeFood.foodId} petId={activeFood.petId} hitBox={petHitBox} onDone={endFeeding} />
