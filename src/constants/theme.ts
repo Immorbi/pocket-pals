@@ -73,14 +73,16 @@ export function roomBottomInset(width: number, insetBottom: number): number {
   return insetBottom + TAB_BAR_HEIGHT + tabBarOverhang(width) + SPACING.xl * 2;
 }
 
+/** Ровно столько воздуха между рваным краем панели и низом брошенной игрушки или еды. */
+const TOY_MENU_GAP = 100;
+
 /**
- * Земля, по которой ходят животные: расстояние от низа экрана до линии лап главного питомца
- * на сцене. PET_STAND_LIFT сюда не входит — тот подъём только у боковых стикеров-превью,
- * а не у того, с кем на самом деле играешь. Брошенная игрушка и поднесённая еда ложатся на
- * эту же линию — иначе они лежат либо в полоске под травой, либо натурально в воздухе.
+ * Земля, на которую ложатся брошенная игрушка и поднесённая еда: фиксированный отступ от
+ * рваного края панели, а не доля от чего-то ещё — так это число можно просить менять само
+ * по себе, не трогая высоту, на которой стоят питомцы.
  */
 export function petGroundOffset(width: number, insetBottom: number): number {
-  return roomBottomInset(width, insetBottom);
+  return insetBottom + TAB_BAR_HEIGHT + tabBarOverhang(width) + TOY_MENU_GAP;
 }
 
 // Generous, claymorphism-leaning radii — chunky and toy-like rather than sharp.

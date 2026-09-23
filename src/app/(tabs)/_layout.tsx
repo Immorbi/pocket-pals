@@ -33,7 +33,20 @@ function PaperBackground() {
   );
 }
 
-function BarItem({ icon, label, active, onPress }: { icon: ImageSourcePropType; label: string; active?: boolean; onPress: () => void }) {
+function BarItem({
+  icon,
+  label,
+  active,
+  onPress,
+  large,
+}: {
+  icon: ImageSourcePropType;
+  label: string;
+  active?: boolean;
+  onPress: () => void;
+  /** Питомцы и Игры — на 10% крупнее соседей, по просьбе. */
+  large?: boolean;
+}) {
   return (
     <Pressable
       style={styles.item}
@@ -45,7 +58,7 @@ function BarItem({ icon, label, active, onPress }: { icon: ImageSourcePropType; 
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
     >
-      <Image source={icon} style={styles.icon} resizeMode="contain" />
+      <Image source={icon} style={[styles.icon, large && styles.iconLarge]} resizeMode="contain" />
       <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
     </Pressable>
   );
@@ -77,10 +90,10 @@ function PaperTabBar({ state, navigation }: TabBarProps) {
   return (
     <View style={[styles.bar, { height: TAB_BAR_HEIGHT + insets.bottom, paddingBottom: insets.bottom }]}>
       <PaperBackground />
-      <BarItem icon={ICONS.pets} label="Питомцы" active={onHome} onPress={() => navigation.navigate('index')} />
+      <BarItem icon={ICONS.pets} label="Питомцы" active={onHome} large onPress={() => navigation.navigate('index')} />
       <BarItem icon={ICONS.food} label="Еда" onPress={() => actOnHome('food')} />
       <BarItem icon={ICONS.play} label="Играть" onPress={() => actOnHome('play')} />
-      <BarItem icon={ICONS.games} label="Игры" active={route === 'games'} onPress={() => navigation.navigate('games')} />
+      <BarItem icon={ICONS.games} label="Игры" active={route === 'games'} large onPress={() => navigation.navigate('games')} />
     </View>
   );
 }
@@ -119,6 +132,11 @@ const styles = StyleSheet.create({
   icon: {
     width: 38,
     height: 38,
+  },
+  iconLarge: {
+    // 38 × 1.1, округлено.
+    width: 42,
+    height: 42,
   },
   label: {
     fontFamily: FONTS.bodyMedium,
