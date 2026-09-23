@@ -32,11 +32,14 @@ jobs:
         run: npx expo export --platform web
 
       # Expo names generated files with a leading underscore, which Jekyll would skip.
-      # 404.html mirrors the app shell so that refreshing a deep link still loads it —
-      # Pages has no rewrite rules, and this build is a single-page app.
+      # The meta tags go in before 404.html is copied, so a shared deep link previews
+      # the same way the home page does. 404.html mirrors the app shell so that
+      # refreshing a deep link still loads it — Pages has no rewrite rules, and this
+      # build is a single-page app.
       - name: Prepare for static hosting
         run: |
           touch dist/.nojekyll
+          node scripts/inject-web-meta.mjs dist/index.html
           cp dist/index.html dist/404.html
 
       - uses: actions/configure-pages@v5
