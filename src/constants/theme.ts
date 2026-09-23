@@ -74,12 +74,13 @@ export function roomBottomInset(width: number, insetBottom: number): number {
 }
 
 /**
- * Земля, по которой ходят животные: расстояние от низа экрана до линии лап. Брошенная
- * игрушка и поднесённая еда ложатся на неё же — иначе они лежат в полоске между травой и
- * бумажным краем, то есть не на той земле, где стоят звери.
+ * Земля, по которой ходят животные: расстояние от низа экрана до линии лап главного питомца
+ * на сцене. PET_STAND_LIFT сюда не входит — тот подъём только у боковых стикеров-превью,
+ * а не у того, с кем на самом деле играешь. Брошенная игрушка и поднесённая еда ложатся на
+ * эту же линию — иначе они лежат либо в полоске под травой, либо натурально в воздухе.
  */
 export function petGroundOffset(width: number, insetBottom: number): number {
-  return roomBottomInset(width, insetBottom) + PET_STAND_LIFT;
+  return roomBottomInset(width, insetBottom);
 }
 
 // Generous, claymorphism-leaning radii — chunky and toy-like rather than sharp.
