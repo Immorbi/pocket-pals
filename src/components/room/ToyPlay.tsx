@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -11,7 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { COLORS, FONTS, RADIUS, SHADOW, SPACING } from '@/constants/theme';
+import { COLORS, FONTS, RADIUS, SHADOW, SPACING, petGroundOffset } from '@/constants/theme';
 import { PET_DEFINITIONS } from '@/domain/petDefinitions';
 import { TOYS } from '@/domain/toys';
 import type { PetId, ToyId } from '@/domain/types';
@@ -38,7 +39,6 @@ function throwWord(n: number): string {
 const TOY_SIZE = 76;
 /** The toy rests near the bottom-left so it never spawns already on top of the pet. */
 const TOY_START_X = 28;
-const TOY_BOTTOM = 150;
 
 /**
  * Throwing physics, in pixels and seconds. The toy rests on the grass at translateY 0, so
@@ -59,7 +59,10 @@ export function ToyPlay({ toyId, petId, onDone }: ToyPlayProps) {
   const toy = TOYS[toyId];
   const def = PET_DEFINITIONS[petId];
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const toyStartY = screenHeight - TOY_BOTTOM - TOY_SIZE;
+  const insets = useSafeAreaInsets();
+  // Лежит на той же земле, по которой ходят животные, а не в полоске под травой.
+  const toyBottom = petGroundOffset(screenWidth, insets.bottom);
+  const toyStartY = screenHeight - toyBottom - TOY_SIZE;
   const startPlaying = useGameStore((s) => s.startPlaying);
   const finishPlaying = useGameStore((s) => s.finishPlaying);
 
@@ -186,7 +189,7 @@ export function ToyPlay({ toyId, petId, onDone }: ToyPlayProps) {
 
       {done ? null : (
         <GestureDetector gesture={pan}>
-          <Animated.View style={[styles.toy, toyStyle]}>
+          <Animated.View style={[styles.toy, { bottom: toyBottom }, toyStyle]}>
             {toy.image ? (
               <Image source={toy.image} style={styles.toyImage} resizeMode="contain" />
             ) : (
@@ -225,7 +228,6 @@ const styles = StyleSheet.create({
   toy: {
     position: 'absolute',
     left: TOY_START_X,
-    bottom: TOY_BOTTOM,
     width: TOY_SIZE,
     height: TOY_SIZE,
     alignItems: 'center',

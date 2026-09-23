@@ -65,6 +65,23 @@ export function tabBarOverhang(width: number): number {
   return Math.round(width * TAB_BAR_TEAR_RATIO);
 }
 
+/** Насколько боковые питомцы подняты над низом «комнаты» — это и есть линия их лап. */
+export const PET_STAND_LIFT = SPACING.xl + SPACING.lg + SPACING.sm;
+
+/** Отступ от низа экрана до низа «комнаты»: панель, её рваный край и воздух над ним. */
+export function roomBottomInset(width: number, insetBottom: number): number {
+  return insetBottom + TAB_BAR_HEIGHT + tabBarOverhang(width) + SPACING.xl * 2;
+}
+
+/**
+ * Земля, по которой ходят животные: расстояние от низа экрана до линии лап. Брошенная
+ * игрушка и поднесённая еда ложатся на неё же — иначе они лежат в полоске между травой и
+ * бумажным краем, то есть не на той земле, где стоят звери.
+ */
+export function petGroundOffset(width: number, insetBottom: number): number {
+  return roomBottomInset(width, insetBottom) + PET_STAND_LIFT;
+}
+
 // Generous, claymorphism-leaning radii — chunky and toy-like rather than sharp.
 export const RADIUS = { sm: 12, md: 20, lg: 28, pill: 999 };
 

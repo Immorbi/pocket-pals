@@ -89,7 +89,9 @@ export const PET_DEFINITIONS: Record<PetId, PetDefinition> = {
     species: 'cat',
     personality: ['спокойный', 'сонный', 'ласковый', 'любит поесть', 'немного ленивый'],
     favoriteFood: 'wet_cat_food',
-    favoriteToy: 'feather',
+    // Мяч, а не пёрышко: пёрышко не входит в открытые игрушки, и «любимая» у него
+    // не показывалась ни разу. Теперь у каждого свой фаворит из трёх доступных.
+    favoriteToy: 'ball',
     checkersStyle: 'calm',
     decayMultipliers: { hunger: 1.2, fun: 1, attention: 1 },
     emoji: {

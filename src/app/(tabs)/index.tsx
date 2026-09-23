@@ -14,7 +14,7 @@ import { RoomBackground } from '@/components/room/RoomBackground';
 import { TopStatusBar } from '@/components/room/TopStatusBar';
 import { FoodSheet } from '@/components/sheets/FoodSheet';
 import { PlaySheet } from '@/components/sheets/PlaySheet';
-import { FONTS, GUTTER, SPACING, TAB_BAR_HEIGHT, TEXT_ON_ART, tabBarOverhang } from '@/constants/theme';
+import { FONTS, GUTTER, PET_STAND_LIFT, SPACING, TEXT_ON_ART, roomBottomInset } from '@/constants/theme';
 import { PET_DEFINITIONS, PET_ORDER } from '@/domain/petDefinitions';
 import { dayNumber } from '@/domain/wishes';
 import { useGameStore } from '@/store/gameStore';
@@ -143,7 +143,7 @@ export default function HomeScreen() {
 
         {/* Sits above the ragged paper edge, which rises well clear of the bar itself. */}
         <View
-          style={[styles.room, { paddingBottom: insets.bottom + TAB_BAR_HEIGHT + tabBarOverhang(screenWidth) + SPACING.xl * 2 }]}
+          style={[styles.room, { paddingBottom: roomBottomInset(screenWidth, insets.bottom) }]}
           pointerEvents="box-none"
         >
           <SideAvatarButton def={PET_DEFINITIONS[prevId]} onPress={() => setActivePetId(prevId)} />
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     height: 72,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.xl + SPACING.lg + SPACING.sm,
+    marginBottom: PET_STAND_LIFT,
   },
   avatarButtonImage: {
     width: '100%',

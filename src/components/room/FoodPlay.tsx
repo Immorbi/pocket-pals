@@ -2,9 +2,10 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 
-import { COLORS, FONTS, RADIUS, SHADOW, SPACING } from '@/constants/theme';
+import { COLORS, FONTS, RADIUS, SHADOW, SPACING, petGroundOffset } from '@/constants/theme';
 import { FOODS, foodReactionFor } from '@/domain/food';
 import { PET_DEFINITIONS } from '@/domain/petDefinitions';
 import type { FoodId, PetId } from '@/domain/types';
@@ -29,7 +30,6 @@ interface FoodPlayProps {
 const FOOD_SIZE = 76;
 /** The food rests near the bottom-left so it never spawns already on top of the pet. */
 const FOOD_START_X = 28;
-const FOOD_BOTTOM = 150;
 
 /**
  * Drag-to-feed: near-identical staging and gesture handling to ToyPlay, but there is no
@@ -39,8 +39,11 @@ export function FoodPlay({ foodId, petId, hitBox, onDone }: FoodPlayProps) {
   const food = FOODS[foodId];
   const def = PET_DEFINITIONS[petId];
   const reaction = foodReactionFor(petId, foodId);
-  const { height: screenHeight } = useWindowDimensions();
-  const foodStartY = screenHeight - FOOD_BOTTOM - FOOD_SIZE;
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  // Лежит на той же земле, по которой ходят животные, а не в полоске под травой.
+  const foodBottom = petGroundOffset(screenWidth, insets.bottom);
+  const foodStartY = screenHeight - foodBottom - FOOD_SIZE;
   const feedPet = useGameStore((s) => s.feedPet);
 
   const [fed, setFed] = useState(false);
@@ -97,7 +100,7 @@ export function FoodPlay({ foodId, petId, hitBox, onDone }: FoodPlayProps) {
 
       {fed ? null : (
         <GestureDetector gesture={pan}>
-          <Animated.View style={[styles.food, foodStyle]}>
+          <Animated.View style={[styles.food, { bottom: foodBottom }, foodStyle]}>
             {food.image ? (
               <Image source={food.image} style={styles.foodImage} resizeMode="contain" />
             ) : (
@@ -136,7 +139,6 @@ const styles = StyleSheet.create({
   food: {
     position: 'absolute',
     left: FOOD_START_X,
-    bottom: FOOD_BOTTOM,
     width: FOOD_SIZE,
     height: FOOD_SIZE,
     alignItems: 'center',
