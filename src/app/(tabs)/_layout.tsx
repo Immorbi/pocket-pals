@@ -111,7 +111,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
+    // Приподнято над рваным краем бумаги: нижний отступ больше верхнего, и центрированное
+    // содержимое уезжает вверх на половину разницы.
     paddingTop: SPACING.xs,
+    paddingBottom: SPACING.md,
   },
   icon: {
     width: 38,

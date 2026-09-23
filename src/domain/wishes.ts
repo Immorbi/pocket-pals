@@ -371,16 +371,20 @@ export const WISHES: string[] = [
 ];
 
 /** Day 1 is the day of the first launch, so the year opens on wish number one. */
-/** Local calendar day of a moment — the note turns over at midnight. */
-function localDay(at: number): number {
-  const d = new Date(at);
-  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+// Грузия живёт на UTC+4 круглый год — перевода часов там нет с 2005-го, так что
+// фиксированного сдвига достаточно.
+const TBILISI_OFFSET_MS = 4 * 60 * 60 * 1000;
+
+/** Календарный день по Тбилиси — записка меняется в 00:00 там, а не на часах устройства. */
+function tbilisiDay(at: number): number {
+  const d = new Date(at + TBILISI_OFFSET_MS);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
 export function dayNumber(startedAt: number, now: Date = new Date()): number {
   // Saves written before this field existed have no start date — those begin today.
   if (!Number.isFinite(startedAt)) return 1;
-  const elapsed = Math.floor((localDay(now.getTime()) - localDay(startedAt)) / 86_400_000);
+  const elapsed = Math.floor((tbilisiDay(now.getTime()) - tbilisiDay(startedAt)) / 86_400_000);
   return Math.max(0, elapsed) + 1;
 }
 

@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourceP
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, FONTS, NEED_COLORS, RADIUS, SHADOW, SPACING, TAB_BAR_HEIGHT } from '@/constants/theme';
-import { BOND_LEVEL_NAMES, BOND_UNLOCKS } from '@/domain/bond';
+import { BOND_UNLOCKS } from '@/domain/bond';
 import { FOODS } from '@/domain/food';
 import { PET_DEFINITIONS } from '@/domain/petDefinitions';
 import { statusLabel } from '@/domain/statusLabels';
@@ -79,7 +79,6 @@ export default function PetProfileScreen() {
             )}
           </View>
           <Text style={styles.name}>{def.name}</Text>
-          <Text style={styles.bondLevel}>{BOND_LEVEL_NAMES[pet.bondLevel]}</Text>
         </View>
 
         <View style={styles.tagRow}>
@@ -151,12 +150,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: COLORS.heading,
     marginTop: SPACING.sm,
-  },
-  bondLevel: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 14,
-    color: COLORS.primary,
-    marginTop: 2,
   },
   tagRow: {
     flexDirection: 'row',

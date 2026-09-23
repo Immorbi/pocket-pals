@@ -202,8 +202,8 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
     : touching
       ? `Ещё ${left} с`
       : thrown
-        ? `Кидай ещё — ${def.name} ловит`
-        : `Брось ${toy.label.toLowerCase()} — ${def.name} догонит`;
+        ? 'Кидай ещё'
+        : `Брось ${toy.label.toLowerCase()}`;
 
   return (
     <View style={styles.layer} pointerEvents="box-none">
