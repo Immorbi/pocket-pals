@@ -1,5 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
+import type { PetPlayStyle } from './checkers';
 import type { FoodId, PetId, Species, ToyId } from './types';
 
 export interface PetDefinition {
@@ -14,6 +15,8 @@ export interface PetDefinition {
   personality: string[];
   favoriteFood: FoodId;
   favoriteToy: ToyId;
+  /** How this one plays checkers — the same temperament as the personality above. */
+  checkersStyle: PetPlayStyle;
   /** Multiplies the base hourly decay rate for this pet's standout need. */
   decayMultipliers: {
     hunger: number;
@@ -53,6 +56,7 @@ export const PET_DEFINITIONS: Record<PetId, PetDefinition> = {
     personality: ['энергичная', 'любопытная', 'немного хаотичная', 'игривая', 'быстро скучает'],
     favoriteFood: 'tuna',
     favoriteToy: 'yarn',
+    checkersStyle: 'chaotic',
     decayMultipliers: { hunger: 1, fun: 1.3, attention: 1 },
     emoji: {
       base: '🐈',
@@ -86,6 +90,7 @@ export const PET_DEFINITIONS: Record<PetId, PetDefinition> = {
     personality: ['спокойный', 'сонный', 'ласковый', 'любит поесть', 'немного ленивый'],
     favoriteFood: 'wet_cat_food',
     favoriteToy: 'feather',
+    checkersStyle: 'calm',
     decayMultipliers: { hunger: 1.2, fun: 1, attention: 1 },
     emoji: {
       base: '🐱',
@@ -117,6 +122,7 @@ export const PET_DEFINITIONS: Record<PetId, PetDefinition> = {
     personality: ['дружелюбная', 'общительная', 'восторженная', 'ласковая', 'жаждет внимания'],
     favoriteFood: 'dog_treat',
     favoriteToy: 'rope',
+    checkersStyle: 'eager',
     decayMultipliers: { hunger: 1, fun: 1, attention: 1.4 },
     emoji: {
       base: '🐶',

@@ -11,9 +11,10 @@ const PAPER = require('../../../assets/images/tabbar-paper.png');
 // Own icons, distinct from the actual food/toy artwork shown inside the sheets — a dog-treat
 // biscuit or a single ball would misrepresent what tapping the tab actually opens.
 const ICONS = {
+  pets: require('../../../assets/images/icons/pets.png'),
   food: require('../../../assets/images/icons/food.png'),
   play: require('../../../assets/images/icons/play.png'),
-  puzzle: require('../../../assets/images/icons/puzzle.png'),
+  games: require('../../../assets/images/icons/checkers.png'),
 } satisfies Record<string, ImageSourcePropType>;
 
 /**
@@ -51,9 +52,9 @@ function BarItem({ icon, label, active, onPress }: { icon: ImageSourcePropType; 
 }
 
 /**
- * Two of the three are actions rather than places — feeding and playing open a sheet over
- * whatever is on screen — so the bar is written by hand instead of being generated from the
- * navigator's routes. Only the one that really is a destination lights up.
+ * Two of the four are actions rather than places — feeding and playing open a sheet over the
+ * animals — so the bar is written by hand instead of being generated from the navigator's
+ * routes. Only the two that really are destinations light up.
  */
 interface TabBarProps {
   state: { index: number; routes: { name: string }[] };
@@ -63,20 +64,23 @@ interface TabBarProps {
 function PaperTabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const openSheet = useUiStore((s) => s.openSheet);
-  const onPuzzles = state.routes[state.index]?.name === 'puzzles';
+  const route = state.routes[state.index]?.name;
+  const onHome = route === 'index';
 
   const actOnHome = (sheet: SheetName) => {
-    // The sheets belong to the Home screen, so come back to it first.
-    if (onPuzzles) navigation.navigate('index');
+    // The sheets are rendered by the Home screen, so wherever we are, go back to the animals
+    // first — otherwise the sheet opens on a screen that never draws it.
+    if (!onHome) navigation.navigate('index');
     openSheet(sheet);
   };
 
   return (
     <View style={[styles.bar, { height: TAB_BAR_HEIGHT + insets.bottom, paddingBottom: insets.bottom }]}>
       <PaperBackground />
+      <BarItem icon={ICONS.pets} label="Питомцы" active={onHome} onPress={() => navigation.navigate('index')} />
       <BarItem icon={ICONS.food} label="Еда" onPress={() => actOnHome('food')} />
       <BarItem icon={ICONS.play} label="Играть" onPress={() => actOnHome('play')} />
-      <BarItem icon={ICONS.puzzle} label="Пазлы" active={onPuzzles} onPress={() => navigation.navigate('puzzles')} />
+      <BarItem icon={ICONS.games} label="Игры" active={route === 'games'} onPress={() => navigation.navigate('games')} />
     </View>
   );
 }
@@ -85,7 +89,8 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <PaperTabBar {...(props as unknown as TabBarProps)} />}>
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="puzzles" />
+      <Tabs.Screen name="games" />
+      <Tabs.Screen name="puzzles" options={{ href: null }} />
       {/* Reached from the pet's name on the Home screen, not from the bar. */}
       <Tabs.Screen name="pets" options={{ href: null }} />
     </Tabs>

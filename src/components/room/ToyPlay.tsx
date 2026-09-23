@@ -2,7 +2,14 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useFrameCallback,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { COLORS, FONTS, RADIUS, SHADOW, SPACING } from '@/constants/theme';
 import { PET_DEFINITIONS } from '@/domain/petDefinitions';
@@ -30,20 +37,41 @@ const TOY_SIZE = 76;
 const TOY_START_X = 28;
 const TOY_BOTTOM = 150;
 
+/**
+ * Throwing physics, in pixels and seconds. The toy rests on the grass at translateY 0, so
+ * that line is the floor and everything above it is negative.
+ */
+const GRAVITY = 2600;
+/** How much of the fall is kept on the way back up — a toy, not a superball. */
+const BOUNCE = 0.52;
+const WALL_BOUNCE = 0.45;
+/** Each floor hit scrubs sideways speed; rolling then bleeds off the rest, per second. */
+const BOUNCE_DRAG = 0.78;
+const ROLL_DRAG = 2.4;
+/** Below this it has stopped in any way that matters, so it settles instead of jittering. */
+const REST_SPEED = 42;
+const EDGE_PADDING = 8;
+
 export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
   const toy = TOYS[toyId];
   const def = PET_DEFINITIONS[petId];
-  const { height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const toyStartY = screenHeight - TOY_BOTTOM - TOY_SIZE;
   const startPlaying = useGameStore((s) => s.startPlaying);
   const finishPlaying = useGameStore((s) => s.finishPlaying);
 
   const [touching, setTouching] = useState(false);
+  const [thrown, setThrown] = useState(false);
   const [left, setLeft] = useState(toy.durationSeconds);
   const done = left <= 0;
 
   const x = useSharedValue(0);
   const y = useSharedValue(0);
+  const velocityX = useSharedValue(0);
+  const velocityY = useSharedValue(0);
+  const spin = useSharedValue(0);
+  const flying = useSharedValue(false);
+  const onPet = useSharedValue(false);
   const grabbed = useSharedValue(0);
 
   // Only the seconds the toy actually spends on the pet count, so the game is about
@@ -67,36 +95,120 @@ export function ToyPlay({ toyId, petId, hitBox, onDone }: ToyPlayProps) {
   }, [done, petId, toyId, finishPlaying, onDone]);
 
   const reportTouch = (value: boolean) => setTouching(value);
+  const reportThrown = () => setThrown(true);
+  const bounceFeedback = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
+  /** Window-space centre of the toy, which is what the pet's hit box is measured against. */
+  const overPet = (nextX: number, nextY: number) => {
+    'worklet';
+    if (!hitBox) return false;
+    const cx = TOY_START_X + nextX + TOY_SIZE / 2;
+    const cy = toyStartY + nextY + TOY_SIZE / 2;
+    return cx > hitBox.x && cx < hitBox.x + hitBox.width && cy > hitBox.y && cy < hitBox.y + hitBox.height;
+  };
+
+  const setTouchIfChanged = (value: boolean) => {
+    'worklet';
+    if (onPet.value === value) return;
+    onPet.value = value;
+    runOnJS(reportTouch)(value);
+  };
+
+  useFrameCallback((frame) => {
+    'worklet';
+    if (!flying.value) return;
+
+    // Clamp the step: a dropped frame must not teleport the toy through the floor.
+    const dt = Math.min(frame.timeSincePreviousFrame ?? 16, 32) / 1000;
+    const minX = EDGE_PADDING - TOY_START_X;
+    const maxX = screenWidth - TOY_SIZE - EDGE_PADDING - TOY_START_X;
+    const ceiling = -(toyStartY - EDGE_PADDING);
+
+    velocityY.value += GRAVITY * dt;
+    let nextX = x.value + velocityX.value * dt;
+    let nextY = y.value + velocityY.value * dt;
+
+    if (nextX < minX || nextX > maxX) {
+      nextX = nextX < minX ? minX : maxX;
+      velocityX.value = -velocityX.value * WALL_BOUNCE;
+    }
+    if (nextY < ceiling) {
+      nextY = ceiling;
+      velocityY.value = -velocityY.value * WALL_BOUNCE;
+    }
+
+    if (nextY >= 0) {
+      nextY = 0;
+      if (Math.abs(velocityY.value) > REST_SPEED) {
+        velocityY.value = -velocityY.value * BOUNCE;
+        velocityX.value *= BOUNCE_DRAG;
+        runOnJS(bounceFeedback)();
+      } else {
+        // Landed for good: roll to a stop instead of trembling on the spot.
+        velocityY.value = 0;
+        velocityX.value *= Math.max(0, 1 - ROLL_DRAG * dt);
+        if (Math.abs(velocityX.value) < REST_SPEED / 2) {
+          velocityX.value = 0;
+          flying.value = false;
+        }
+      }
+    }
+
+    x.value = nextX;
+    y.value = nextY;
+    spin.value += velocityX.value * dt * 0.9;
+    setTouchIfChanged(overPet(nextX, nextY));
+  });
+
+  /* eslint-disable react-hooks/immutability -- Reanimated shared values written from gesture
+     callbacks on the UI thread, never React state written during render. */
   const pan = Gesture.Pan()
     .onBegin(() => {
+      // Catching it mid-flight stops it dead in your hand.
+      flying.value = false;
+      velocityX.value = 0;
+      velocityY.value = 0;
       grabbed.value = withSpring(1, { damping: 12 });
     })
-    .onChange((e) => {
-      x.value += e.changeX;
-      y.value += e.changeY;
-      if (!hitBox) return;
-      const cx = TOY_START_X + x.value + TOY_SIZE / 2;
-      const cy = toyStartY + y.value + TOY_SIZE / 2;
-      const inside =
-        cx > hitBox.x && cx < hitBox.x + hitBox.width && cy > hitBox.y && cy < hitBox.y + hitBox.height;
-      runOnJS(reportTouch)(inside);
+    .onChange((event) => {
+      x.value += event.changeX;
+      y.value += event.changeY;
+      spin.value += event.changeX * 0.4;
+      setTouchIfChanged(overPet(x.value, y.value));
+    })
+    .onEnd((event) => {
+      // Let go mid-air and it keeps the speed of your hand — that is the throw.
+      velocityX.value = event.velocityX;
+      velocityY.value = event.velocityY;
+      flying.value = true;
+      if (Math.abs(event.velocityX) + Math.abs(event.velocityY) > 300) runOnJS(reportThrown)();
     })
     .onFinalize(() => {
       grabbed.value = withTiming(0, { duration: 160 });
-      runOnJS(reportTouch)(false);
     });
+  /* eslint-enable react-hooks/immutability */
 
   const toyStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: x.value }, { translateY: y.value }, { scale: 1 + grabbed.value * 0.12 }],
+    transform: [
+      { translateX: x.value },
+      { translateY: y.value },
+      { rotate: `${spin.value}deg` },
+      { scale: 1 + grabbed.value * 0.12 },
+    ],
   }));
+
+  const hint = done
+    ? `${def.name} ${def.gender === 'f' ? 'наигралась' : 'наигрался'}!`
+    : touching
+      ? `Ещё ${left} с`
+      : thrown
+        ? `Кидай ещё — ${def.name} ловит`
+        : `Брось ${toy.label.toLowerCase()} — ${def.name} догонит`;
 
   return (
     <View style={styles.layer} pointerEvents="box-none">
       <View style={styles.banner} pointerEvents="none">
-        <Text style={styles.bannerText}>
-          {done ? `${def.name} ${def.gender === 'f' ? 'наигралась' : 'наигрался'}!` : touching ? `Ещё ${left} с` : `Поводите ${toy.label.toLowerCase()} по ${def.nameGenitive}`}
-        </Text>
+        <Text style={styles.bannerText}>{hint}</Text>
       </View>
 
       {done ? null : (

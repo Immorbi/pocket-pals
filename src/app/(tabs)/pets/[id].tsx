@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, FONTS, NEED_COLORS, RADIUS, SHADOW, SPACING, TAB_BAR_HEIGHT } from '@/constants/theme';
@@ -55,16 +55,21 @@ export default function PetProfileScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: def.name,
-          headerStyle: { backgroundColor: COLORS.background },
-          headerTitleStyle: { fontFamily: FONTS.heading, color: COLORS.heading },
-          headerTintColor: COLORS.primary,
-        }}
-      />
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + TAB_BAR_HEIGHT + SPACING.lg }}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: insets.top + SPACING.sm, paddingBottom: insets.bottom + TAB_BAR_HEIGHT + SPACING.lg }}
+      >
+        {/* Pushed straight from the Home screen, so the stack has nothing to go back to on its
+            own — the way out has to be here, and the name is already in the hero below. */}
+        <Pressable
+          onPress={() => router.replace('/(tabs)')}
+          accessibilityRole="button"
+          accessibilityLabel="Назад к питомцам"
+          hitSlop={12}
+          style={styles.backSlot}
+        >
+          <Text style={styles.back}>‹ Питомцы</Text>
+        </Pressable>
         <View style={styles.hero}>
           <View style={styles.portraitWrap}>
             {def.portrait ? (
@@ -111,9 +116,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  backSlot: {
+    paddingHorizontal: SPACING.lg,
+  },
+  back: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 16,
+    color: COLORS.heading,
+  },
   hero: {
     alignItems: 'center',
-    paddingVertical: SPACING.xl,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
   portraitWrap: {
     width: 112,

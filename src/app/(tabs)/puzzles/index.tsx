@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -20,6 +20,17 @@ export default function PuzzlesScreen() {
       style={styles.container}
       contentContainerStyle={{ paddingTop: insets.top + SPACING.md, paddingBottom: insets.bottom + TAB_BAR_HEIGHT + SPACING.xl }}
     >
+      {/* Reached from the Games card, which is not a tab of its own — so the way back has to
+          live on the screen itself. */}
+      <Pressable
+        onPress={() => router.replace('/(tabs)/games')}
+        accessibilityRole="button"
+        accessibilityLabel="Все игры"
+        hitSlop={12}
+        style={styles.backSlot}
+      >
+        <Text style={styles.back}>‹ Игры</Text>
+      </Pressable>
       <Text style={styles.header}>Пазлы</Text>
       <Text style={styles.subheader}>
         {PUZZLE_ORDER.length > 1
@@ -85,6 +96,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  backSlot: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xs,
+  },
+  back: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 16,
+    color: COLORS.heading,
   },
   header: {
     fontFamily: FONTS.headingExtra,

@@ -1,4 +1,5 @@
 import { render } from './chatter';
+import type { Species } from './types';
 
 /**
  * What a pet says out loud right after being fed or played with — a short, immediate
@@ -67,4 +68,187 @@ export function feedReactionLine(gender: 'f' | 'm', tier: 'favorite' | 'refused'
 
 export function playReactionLine(gender: 'f' | 'm', isFavorite: boolean): string {
   return pick(isFavorite ? PLAY_FAVORITE : PLAY_NORMAL, gender);
+}
+
+const CHECKERS_TAKES: string[] = [
+  'Ага, попалась!',
+  'Эту я забираю.',
+  'Не смотри так, ход честный.',
+  'Ой. Само получилось.',
+  'Один — ноль в мою пользу.',
+  'Я хорошо играю, правда?',
+];
+
+const CHECKERS_LOST_PIECE: string[] = [
+  'Эй, это была моя!',
+  'Ну ладно, забирай.',
+  'Я специально, не подумай.',
+  'Хм. Так тоже можно было?',
+  'Ничего, я отыграюсь.',
+  'Ты серьёзно настроена.',
+];
+
+const CHECKERS_WON: string[] = [
+  'Я выиграл{|а}! Ещё партию?',
+  'Вот так вот.',
+  'Похоже, сегодня мой день.',
+  'Не расстраивайся, ты почти.',
+  'Кто тут лучший игрок? Я.',
+];
+
+const CHECKERS_LOST: string[] = [
+  'Твоя взяла. Давай ещё!',
+  'Ладно, ты лучше играешь.',
+  'В следующий раз я выиграю.',
+  'Хорошая партия!',
+  'Я просто поддал{ся|ась}. Честно.',
+];
+
+export type CheckersMoment = 'takes' | 'lostPiece' | 'won' | 'lost';
+
+export function checkersLine(gender: 'f' | 'm', moment: CheckersMoment): string {
+  const pool =
+    moment === 'takes' ? CHECKERS_TAKES : moment === 'lostPiece' ? CHECKERS_LOST_PIECE : moment === 'won' ? CHECKERS_WON : CHECKERS_LOST;
+  return pick(pool, gender);
+}
+
+/**
+ * What a pet says when you poke it. Far and away the most common interaction, so the pools
+ * are deep enough that the same line rarely comes back twice in a row — and the tone shifts
+ * with how the animal is feeling rather than being one generic "meow".
+ */
+const TAP_IDLE: string[] = [
+  'Да? Я слушаю.',
+  'Ты трога{л|ла} меня. Я запомни{л|ла}.',
+  'Это было приятно. Повтори.',
+  'Я занят{|а}. Сижу.',
+  'Палец. Знакомый палец.',
+  'Я тут вообще-то дума{л|ла} о важном.',
+  'Мне нравится, но виду не подам.',
+  'Ещё раз — и я начну мурчать. Может быть.',
+  'Продолжай, ты на верном пути.',
+  'Проверка связи. Связь есть.',
+];
+
+const TAP_DAYDREAM: string[] = [
+  'Я тут подума{л|ла}… а где игрушка?',
+  'В голове одна мысль. Угадай какая.',
+  'Мечтаю. Не мешай. Ладно, мешай.',
+  'Кажется, я что-то потеря{л|ла}. Кажется, игрушку.',
+  'Задума{лся|лась} о хорошем.',
+  'Представляю, как всех обыгрываю.',
+];
+
+const TAP_SLEEPY: string[] = [
+  'Мм? Я сплю.',
+  'Приоткры{л|ла} один глаз. Больше не проси.',
+  'Я всё слышу. Но не встаю.',
+  'Позже. Всё позже.',
+  'Сон был такой хороший…',
+  'Пять минуточек.',
+];
+
+const TAP_SLEEPY_ANNOYED: string[] = [
+  'Ну что такое!',
+  'Я это запомню.',
+  'Между прочим, я вид{ел|ела} сон.',
+  'Так нельзя с животными.',
+  'Всё, я обиде{лся|лась}. Немного.',
+  'Разбуди{л|ла}. Довольна?',
+];
+
+const TAP_HUNGRY: string[] = [
+  'Я умираю с голоду. Почти.',
+  'Миска пустая. Это катастрофа.',
+  'Я не ел{|а} целую вечность. Минут сорок.',
+  'Покорми — и я замолчу. Ненадолго.',
+  'Смотрю голодными глазами. Работает?',
+  'Между нами: я бы поел{|а}.',
+];
+
+const TAP_PECKISH: string[] = [
+  'Я бы перекусил{|а}.',
+  'Просто напоминаю, что миска существует.',
+  'Так, о чём это я… а, о еде.',
+  'Немножко бы вкусного.',
+  'Не голод{ен|на}, но если предложишь — не откажусь.',
+];
+
+const TAP_BORED: string[] = [
+  'Мне скучно до дрожи в усах.',
+  'Давай что-нибудь! Что угодно!',
+  'Я уже пересчита{л|ла} все углы.',
+  'Скука. Официально заявляю.',
+  'Ещё немного, и я начну грызть провода.',
+];
+
+const TAP_RESTLESS: string[] = [
+  'Можно поиграть? Совсем чуть-чуть.',
+  'У меня лапы чешутся. Образно.',
+  'Есть идеи, чем заняться?',
+  'Я бы побегал{|а}.',
+  'Что-то мне не сидится.',
+];
+
+const TAP_LONELY: string[] = [
+  'Ты где была так долго?',
+  'Мне тебя не хватало.',
+  'Посиди со мной. Просто посиди.',
+  'Я скуча{л|ла}. Сильно.',
+  'Не уходи больше, ладно?',
+];
+
+const TAP_WANTING: string[] = [
+  'Погладь, пожалуйста.',
+  'Я рядом. Просто чтобы ты знала.',
+  'Немного внимания не помешает.',
+  'Можно поближе?',
+  'Я как бы намекаю.',
+];
+
+/** Двойной тап — самое ласковое, что бывает, и кошки с собаками ведут себя по-разному. */
+const TAP_LOVE_CAT: string[] = [
+  'Мрр. Ладно, ты прощена.',
+  'Мурчу. Это редкость, цени.',
+  'Хорошо гладишь. Продолжай.',
+  'Ещё. Ещё! Всё, хватит.',
+  'Я почти растая{л|ла}.',
+];
+
+const TAP_LOVE_DOG: string[] = [
+  'Я тебя обожаю! Очень! Сильно!',
+  'Хвост сейчас отвалится от радости.',
+  'Ты лучшая!',
+  'Ещё погладь! И ещё!',
+  'Я ждал{|а} этого весь день.',
+];
+
+export type TapMoment =
+  | 'idle'
+  | 'daydream'
+  | 'sleepy'
+  | 'sleepyAnnoyed'
+  | 'hungry'
+  | 'peckish'
+  | 'bored'
+  | 'restless'
+  | 'lonely'
+  | 'wanting'
+  | 'love';
+
+export function tapLine(gender: 'f' | 'm', moment: TapMoment, species: Species): string {
+  const pools: Record<TapMoment, string[]> = {
+    idle: TAP_IDLE,
+    daydream: TAP_DAYDREAM,
+    sleepy: TAP_SLEEPY,
+    sleepyAnnoyed: TAP_SLEEPY_ANNOYED,
+    hungry: TAP_HUNGRY,
+    peckish: TAP_PECKISH,
+    bored: TAP_BORED,
+    restless: TAP_RESTLESS,
+    lonely: TAP_LONELY,
+    wanting: TAP_WANTING,
+    love: species === 'dog' ? TAP_LOVE_DOG : TAP_LOVE_CAT,
+  };
+  return pick(pools[moment], gender);
 }

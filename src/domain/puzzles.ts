@@ -1,6 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
-export type PuzzleId = 'night' | 'sunrise' | 'blanket' | 'sunbeam' | 'nap' | 'cuddle';
+export type PuzzleId = 'night' | 'sunrise' | 'blanket' | 'sunbeam' | 'nap' | 'cuddle' | 'playtime';
 
 export interface PuzzleDefinition {
   id: PuzzleId;
@@ -81,9 +81,19 @@ export const PUZZLES: Record<PuzzleId, PuzzleDefinition> = {
     preview: require('../../assets/images/puzzles/cuddle-grey.png'),
     reward: 'Вдвоём теплее — и мириться не пришлось.',
   },
+  playtime: {
+    id: 'playtime',
+    title: 'Варяг и Джорджия играют',
+    cols: 4,
+    rows: 4,
+    aspect: 1,
+    image: require('../../assets/images/puzzles/playtime.png'),
+    preview: require('../../assets/images/puzzles/playtime-grey.png'),
+    reward: 'Один поклон, один взмах хвоста — игра начинается!',
+  },
 };
 
-export const PUZZLE_ORDER: PuzzleId[] = ['night', 'sunrise', 'blanket', 'sunbeam', 'nap', 'cuddle'];
+export const PUZZLE_ORDER: PuzzleId[] = ['night', 'sunrise', 'blanket', 'sunbeam', 'nap', 'cuddle', 'playtime'];
 
 export type PuzzleProgress = Record<PuzzleId, number[]>;
 

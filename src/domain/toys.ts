@@ -1,7 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
-import { PET_DEFINITIONS, PET_ORDER } from './petDefinitions';
-import type { PetId, PetRuntimeState, Species, ToyId } from './types';
+import type { PetId, Species, ToyId } from './types';
 
 export interface ToyDefinition {
   id: ToyId;
@@ -77,7 +76,8 @@ export const TOYS: Record<ToyId, ToyDefinition> = {
     label: 'Мяч',
     emoji: '🎾',
     image: require('../../assets/images/items/toy-ball.png'),
-    preferredSpecies: ['dog'],
+    // За мячом бегают все — и кошки, и собаки.
+    preferredSpecies: ['cat', 'dog'],
     funReward: 20,
     attentionReward: 5,
     durationSeconds: 10,
@@ -87,11 +87,14 @@ export const TOYS: Record<ToyId, ToyDefinition> = {
 
 export const TOY_ORDER: ToyId[] = ['yarn', 'feather', 'mouse_toy', 'laser', 'ball', 'rope'];
 
-/** Picks which pet a toy's mini-game should target: the eligible species with the lowest Fun. */
-export function pickPlayTarget(toyId: ToyId, pets: Record<PetId, PetRuntimeState>): PetId {
-  const toy = TOYS[toyId];
-  const candidates = PET_ORDER.filter((id) => toy.preferredSpecies.includes(PET_DEFINITIONS[id].species));
-  return candidates.reduce((most, id) => (pets[id].fun < pets[most].fun ? id : most), candidates[0]);
+/**
+ * Who a toy suits best. It is a hint shown on the card, not a rule: every toy can be thrown
+ * for any of the three, because the fun is in throwing it to whoever is on screen.
+ */
+export function suitsHint(toyId: ToyId): string {
+  const species = TOYS[toyId].preferredSpecies;
+  if (species.length !== 1) return 'всем';
+  return species[0] === 'cat' ? 'для кошек' : 'для собак';
 }
 
 export function isFavoriteToy(petId: PetId, toyId: ToyId, favoriteToy: ToyId): boolean {

@@ -184,11 +184,9 @@ export default function HomeScreen() {
       <PlaySheet
         visible={sheet === 'play'}
         onClose={closeSheet}
-        onStartMiniGame={(toyId, petId) => {
-          // The toy is waved over whoever is on screen, so bring that pet into view first.
-          setActivePetId(petId);
-          setActiveToy({ toyId, petId });
-        }}
+        petId={activePetId}
+        // Thrown for whoever is on screen — switch animal on the Home screen to play with another.
+        onStartMiniGame={(toyId) => setActiveToy({ toyId, petId: activePetId })}
       />
       <NoteSheet visible={noteVisible} onClose={() => setNoteVisible(false)} />
       {activeToy ? (
